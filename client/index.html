@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>DEEPHAUL — Vantorex Reclamation Group</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230b0d0c'/><path d='M6 22h20M8 22V10h6l4 5v7' stroke='%23d8a83c' stroke-width='2' fill='none'/></svg>" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <canvas id="viewport"></canvas>
+
+    <!-- Head-up display -->
+    <div id="hud" class="hidden">
+      <div id="crosshair"><span class="dot"></span><span id="interact-prompt"></span></div>
+
+      <div id="hud-topleft">
+        <div id="clock-row"><span id="clock">8:00 AM</span><span id="weather-tag"></span></div>
+        <div id="moon-tag"></div>
+        <div id="autopilot" class="hidden"></div>
+      </div>
+
+      <div id="hud-topright">
+        <div class="stat"><span class="label">QUOTA</span><span id="quota-value">0 / 0</span></div>
+        <div class="stat"><span class="label">CREDITS</span><span id="credits-value">0</span></div>
+        <div class="stat"><span class="label">CARGO</span><span id="cargo-value">0</span></div>
+        <div class="stat"><span class="label">DEADLINE</span><span id="days-value">3</span></div>
+      </div>
+
+      <div id="hud-bottomleft">
+        <div id="vitals">
+          <div class="bar"><div id="health-fill"></div><span class="bar-label">VITALS</span></div>
+          <div class="bar"><div id="stamina-fill"></div><span class="bar-label">STAMINA</span></div>
+        </div>
+        <div id="carry-readout"></div>
+      </div>
+
+      <div id="hud-bottom">
+        <div id="slots"></div>
+      </div>
+
+      <div id="hud-bottomright">
+        <div id="battery-readout"></div>
+      </div>
+
+      <div id="log"></div>
+      <div id="scan-overlay"></div>
+      <div id="damage-flash"></div>
+      <div id="grabbed-overlay" class="hidden">HELD — struggle or call for help</div>
+      <div id="notice"></div>
+    </div>
+
+    <!-- Ship terminal -->
+    <div id="terminal" class="screen hidden">
+      <div class="screen-frame">
+        <div class="screen-title">VANTOREX RECLAMATION GROUP — SHIPBOARD TERMINAL</div>
+        <pre id="terminal-out"></pre>
+        <div class="terminal-input-row">
+          <span class="prompt">&gt;</span><input id="terminal-input" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="screen-hint">ESC to step back from the terminal</div>
+      </div>
+    </div>
+
+    <!-- Ship monitor / radar -->
+    <div id="monitor" class="screen hidden">
+      <div class="screen-frame monitor-frame">
+        <div class="screen-title">SITE MONITOR — CONTACT PLOT</div>
+        <canvas id="monitor-canvas" width="620" height="460"></canvas>
+        <div id="monitor-crew"></div>
+        <div class="screen-hint">ESC to step back &nbsp;·&nbsp; positions are approximate and delayed</div>
+      </div>
+    </div>
+
+    <!-- Spectator -->
+    <div id="spectator" class="hidden">
+      <div id="spectator-banner">YOU ARE DEAD</div>
+      <div id="spectator-cause"></div>
+      <div id="spectator-target"></div>
+      <div id="spectator-hint">[ A / D ] change view &nbsp;·&nbsp; the expedition continues without you</div>
+    </div>
+
+    <!-- Chat -->
+    <div id="chat">
+      <div id="chat-log"></div>
+      <input id="chat-input" class="hidden" maxlength="180" autocomplete="off" />
+    </div>
+
+    <!-- Main menu -->
+    <div id="menu">
+      <div id="menu-panel">
+        <h1>DEEPHAUL</h1>
+        <p class="tagline">Vantorex Reclamation Group — Contracted Salvage Division</p>
+
+        <div id="menu-loading">
+          <div class="loadbar"><div id="loadbar-fill"></div></div>
+          <div id="loading-label">loading manifest…</div>
+        </div>
+
+        <div id="menu-form" class="hidden">
+          <label>EMPLOYEE NAME<input id="name-input" maxlength="16" autocomplete="off" /></label>
+          <label>CREW CODE<input id="room-input" maxlength="24" autocomplete="off" placeholder="default" /></label>
+          <label>SERVER<input id="server-input" autocomplete="off" /></label>
+          <div id="skin-row"></div>
+          <button id="join-button">SIGN CONTRACT</button>
+          <div id="menu-status"></div>
+
+          <details id="menu-controls">
+            <summary>CONTROLS &amp; SETTINGS</summary>
+            <div class="control-grid">
+              <span>WASD</span><span>move</span>
+              <span>Shift</span><span>sprint</span>
+              <span>Ctrl / C</span><span>crouch</span>
+              <span>Space</span><span>jump</span>
+              <span>E</span><span>interact / pick up</span>
+              <span>G</span><span>drop (hold to throw)</span>
+              <span>1–5 / wheel</span><span>select slot</span>
+              <span>F</span><span>toggle light</span>
+              <span>Left click</span><span>use held item</span>
+              <span>V</span><span>hold for walkie-talkie</span>
+              <span>T / Enter</span><span>chat</span>
+              <span>Tab</span><span>crew roster</span>
+              <span>M</span><span>ship monitor (aboard ship)</span>
+              <span>Esc</span><span>release mouse</span>
+            </div>
+            <div class="settings-grid">
+              <label>Mouse sensitivity<input id="set-sens" type="range" min="0.4" max="3" step="0.05" /></label>
+              <label>Master volume<input id="set-volume" type="range" min="0" max="1" step="0.02" /></label>
+              <label>Voice volume<input id="set-voice" type="range" min="0" max="1.5" step="0.02" /></label>
+              <label>Render scale<input id="set-scale" type="range" min="0.5" max="1" step="0.05" /></label>
+              <label>Field of view<input id="set-fov" type="range" min="60" max="105" step="1" /></label>
+              <label class="checkbox"><input id="set-microphone" type="checkbox" /> Proximity voice chat (microphone)</label>
+              <label class="checkbox"><input id="set-shadows" type="checkbox" /> Dynamic shadows</label>
+              <label class="checkbox"><input id="set-headbob" type="checkbox" /> Head bob</label>
+            </div>
+          </details>
+        </div>
+      </div>
+      <div id="menu-footer">
+        Assets: Kenney · Quaternius · Poly Haven · ambientCG — all CC0.
+      </div>
+    </div>
+
+    <div id="roster" class="hidden"></div>
+    <div id="pause" class="hidden"><div>PAUSED — click to resume</div></div>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

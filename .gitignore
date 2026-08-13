@@ -1,0 +1,7 @@
+node_modules
+dist
+.asset-cache
+.saves
+client/public/assets
+*.log
+.DS_Store

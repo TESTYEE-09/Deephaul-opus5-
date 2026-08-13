@@ -1,0 +1,305 @@
+{
+  "$comment": "Curated CC0 asset sources for DEEPHAUL. Everything listed here is CC0-1.0 (public domain equivalent): Kenney, Quaternius, Poly Haven and ambientCG. No attribution is legally required; we credit anyway in docs/CREDITS.md. Nothing is committed to git - tools/fetch-assets.mjs pulls it into client/public/assets and writes a catalog the game reads at runtime.",
+  "repos": {
+    "kenney": {
+      "repo": "Tiddybub/3d-assets",
+      "branch": "main",
+      "credit": "Kenney / Poly Haven / ambientCG (curated CC0 library)",
+      "license": "CC0-1.0"
+    },
+    "quaternius": {
+      "repo": "trebeljahr/quaternius-showcase",
+      "branch": "main",
+      "credit": "Quaternius",
+      "license": "CC0-1.0"
+    },
+    "monsters": {
+      "repo": "511action/descent-3d-assets",
+      "branch": "main",
+      "credit": "Quaternius (Ultimate Monsters)",
+      "license": "CC0-1.0"
+    },
+    "sounds": {
+      "repo": "Daarko/sparkstream-sounds",
+      "branch": "master",
+      "credit": "Kenney",
+      "license": "CC0-1.0"
+    }
+  },
+  "groups": [
+    {
+      "id": "kit.station",
+      "repo": "kenney",
+      "src": "sci-fi/space-station-kit/Models/GLB format/",
+      "dest": "models/kit/station/",
+      "ext": [".glb"],
+      "note": "Primary interior kit: walls, floors, doors, stairs, rails, pipes, containers, terminals."
+    },
+    {
+      "id": "kit.factory",
+      "repo": "kenney",
+      "src": "modern-urban/factory-kit/Models/GLB format/",
+      "dest": "models/kit/factory/",
+      "ext": [".glb"],
+      "note": "Industrial dressing: conveyors, machines, catwalks, hoppers, cranes, screens, hazard signage."
+    },
+    {
+      "id": "kit.scifi",
+      "repo": "quaternius",
+      "src": "public/glb/modular_sci_fi/",
+      "dest": "models/kit/scifi/",
+      "ext": [".glb"],
+      "note": "Second interior look: panelled walls, vents, sliding doors, floor tiles."
+    },
+    {
+      "id": "kit.cave",
+      "repo": "kenney",
+      "src": "nature/modular-cave-kit/Models/GLB format/",
+      "dest": "models/kit/cave/",
+      "ext": [".glb"],
+      "note": "Mineshaft interior variant."
+    },
+    {
+      "id": "kit.dungeon",
+      "repo": "quaternius",
+      "src": "public/glb/modular_dungeon_1/",
+      "dest": "models/kit/dungeon/",
+      "ext": [".glb"],
+      "note": "Sublevel / catacomb interior variant."
+    },
+    {
+      "id": "ext.industrial",
+      "repo": "kenney",
+      "src": "modern-urban/city-kit-industrial/Models/GLB format/",
+      "dest": "models/ext/industrial/",
+      "ext": [".glb"],
+      "note": "Exterior facility silhouettes, chimneys, tanks."
+    },
+    {
+      "id": "ext.survival",
+      "repo": "kenney",
+      "src": "nature/survival-kit/Models/GLB format/",
+      "dest": "models/ext/survival/",
+      "ext": [".glb"]
+    },
+    {
+      "id": "ext.graveyard",
+      "repo": "kenney",
+      "src": "characters/graveyard-kit/Models/GLB format/",
+      "dest": "models/ext/graveyard/",
+      "ext": [".glb"],
+      "note": "Dressing for the bone-orchard moon."
+    },
+    {
+      "id": "ext.nature",
+      "repo": "quaternius",
+      "src": "public/glb/nature_pack/",
+      "dest": "models/ext/nature/",
+      "ext": [".glb"],
+      "max": 60
+    },
+    {
+      "id": "ext.street",
+      "repo": "quaternius",
+      "src": "public/glb/street_pack/",
+      "dest": "models/ext/street/",
+      "ext": [".glb"],
+      "include": ["Sign_", "Streetlight_", "TrafficLight"]
+    },
+    {
+      "id": "ext.space",
+      "repo": "kenney",
+      "src": "sci-fi/space-kit/Models/GLTF format/",
+      "dest": "models/ext/space/",
+      "ext": [".glb"],
+      "note": "Ship hull, landing pads, hangars, rails, machinery."
+    },
+    {
+      "id": "ext.spacepack",
+      "repo": "quaternius",
+      "src": "public/glb/ultimate_space_pack/",
+      "dest": "models/ext/spacepack/",
+      "ext": [".glb"],
+      "note": "Company depot structures and domes."
+    },
+    {
+      "id": "prop.house",
+      "repo": "quaternius",
+      "src": "public/glb/house_interior_pack/",
+      "dest": "models/prop/house/",
+      "ext": [".glb"],
+      "note": "Furniture for offices/break rooms and a large slice of the scrap table."
+    },
+    {
+      "id": "prop.survival",
+      "repo": "quaternius",
+      "src": "public/glb/survival_pack/",
+      "dest": "models/prop/survival/",
+      "ext": [".glb"],
+      "note": "Equipment models (shovel, torch, radio, flare gun, battery) plus scrap."
+    },
+    {
+      "id": "prop.rpg",
+      "repo": "quaternius",
+      "src": "public/glb/rpg_items_pack/",
+      "dest": "models/prop/rpg/",
+      "ext": [".glb"],
+      "note": "Weird valuables: chalices, crowns, crystals, keys, bones."
+    },
+    {
+      "id": "prop.cyber",
+      "repo": "quaternius",
+      "src": "public/glb/cyberpunk_pack/",
+      "dest": "models/prop/cyber/",
+      "ext": [".glb"]
+    },
+    {
+      "id": "prop.food",
+      "repo": "kenney",
+      "src": "misc/food-kit/Models/GLB format/",
+      "dest": "models/prop/food/",
+      "ext": [".glb"],
+      "max": 200
+    },
+    {
+      "id": "prop.arcade",
+      "repo": "kenney",
+      "src": "misc/mini-arcade/Models/GLB format/",
+      "dest": "models/prop/arcade/",
+      "ext": [".glb"]
+    },
+    {
+      "id": "prop.market",
+      "repo": "kenney",
+      "src": "misc/mini-market/Models/GLB format/",
+      "dest": "models/prop/market/",
+      "ext": [".glb"]
+    },
+    {
+      "id": "mob.easy",
+      "repo": "quaternius",
+      "src": "public/glb/easy_enemies_pack/",
+      "dest": "models/mob/easy/",
+      "ext": [".glb"],
+      "note": "Animated: Spider, Rat, Frog, Snake, Snake_angry, Wasp."
+    },
+    {
+      "id": "mob.animals",
+      "repo": "quaternius",
+      "src": "public/glb/animals_pack/",
+      "dest": "models/mob/animals/",
+      "ext": [".glb"],
+      "include": ["Wolf", "Fox", "Stag", "Bull", "Husky"]
+    },
+    {
+      "id": "mob.dino",
+      "repo": "quaternius",
+      "src": "public/glb/dinosaurs_pack/",
+      "dest": "models/mob/dino/",
+      "ext": [".glb"],
+      "include": ["Trex", "Velociraptor", "Parasaurolophus"]
+    },
+    {
+      "id": "mob.mech",
+      "repo": "quaternius",
+      "src": "public/glb/mech_pack/",
+      "dest": "models/mob/mech/",
+      "ext": [".glb"],
+      "include": ["Stan"]
+    },
+    {
+      "id": "mob.ultimate",
+      "repo": "monsters",
+      "src": "models/",
+      "dest": "models/mob/ultimate/",
+      "ext": [".glb", ".gltf"]
+    },
+    {
+      "id": "char.men",
+      "repo": "quaternius",
+      "src": "public/glb/modular_men/",
+      "dest": "models/char/men/",
+      "ext": [".glb"],
+      "include": ["Worker", "Spacesuit", "Casual", "Punk", "Farmer", "Swat", "Adventurer"]
+    },
+    {
+      "id": "char.women",
+      "repo": "quaternius",
+      "src": "public/glb/modular_women/",
+      "dest": "models/char/women/",
+      "ext": [".glb"],
+      "max": 5
+    },
+    {
+      "id": "char.ghosts",
+      "repo": "kenney",
+      "src": "characters/graveyard-kit/Models/GLB format/",
+      "dest": "models/char/ghosts/",
+      "ext": [".glb"],
+      "include": ["character-"]
+    }
+  ],
+  "polyhaven": {
+    "repo": "kenney",
+    "dest": "models/hero/",
+    "note": "Photogrammetry hero scrap. Each folder is a .gltf + .bin + 1K jpg textures.",
+    "items": [
+      "props/Television_01",
+      "props/Camera_01",
+      "props/Lantern_01",
+      "props/Megaphone_01",
+      "props/Ukulele_01",
+      "props/alarm_clock_01",
+      "props/adjustable_wrench",
+      "props/american_football",
+      "props/Drill_01",
+      "props/WetFloorSign_01",
+      "props/all_purpose_cleaner",
+      "props/CheeseBox_01",
+      "modern-urban/CashRegister_01",
+      "modern-urban/CoffeeCart_01",
+      "sci-fi/chemistry_set",
+      "sci-fi/circuit_board",
+      "sci-fi/classic_laptop",
+      "sci-fi/combination_wrench",
+      "sci-fi/bolt_cutters_01",
+      "sci-fi/bench_vice_01",
+      "sci-fi/ammo_box",
+      "sci-fi/Barrel_01",
+      "sci-fi/Barrel_02",
+      "sci-fi/barrel_03",
+      "sci-fi/cardboard_box_01",
+      "sci-fi/barrel_stove"
+    ]
+  },
+  "materials": {
+    "repo": "kenney",
+    "src": "materials/",
+    "dest": "textures/",
+    "suffixes": ["_1K-JPG_Color.jpg", "_1K-JPG_NormalGL.jpg", "_1K-JPG_Roughness.jpg"],
+    "items": [
+      "Metal049A",
+      "Metal055A",
+      "Metal046B",
+      "Concrete034",
+      "Concrete046",
+      "Ground054",
+      "Ground103",
+      "Rock063",
+      "Asphalt025C",
+      "Tiles139"
+    ]
+  },
+  "audio": {
+    "repo": "sounds",
+    "dest": "audio/",
+    "manifest": "manifest.json",
+    "note": "Kenney CC0 sample library. Ambience, creature voices and weather are synthesised at runtime instead - see client/audio/synth.ts.",
+    "categories": {
+      "impacts": 70,
+      "digital-beeps": 60,
+      "ui-clicks": 40,
+      "rpg-quest": 30
+    }
+  }
+}
