@@ -54,6 +54,7 @@ let exterior: ExteriorLayout | null = null;
 let currentSeed = -1;
 let currentMoon: string | null = null;
 let worldReady = false;
+let orbitReady = false;
 let insideShip = true;
 let spectateIndex = 0;
 
@@ -214,6 +215,7 @@ async function join(name: string, room: string, server: string): Promise<void> {
 
   $('menu').classList.add('hidden');
   hud.show();
+  if (!net.expedition.moonId) void buildOrbit();
   bindGameInput();
   requestPointerLock();
 }
@@ -622,14 +624,47 @@ function useEntrance(anchor: number): void {
 
 // ----------------------------------------------------------- world building
 
+/**
+ * In transit there is no moon, but there is still a ship - and the ship is
+ * where the terminal lives, so it has to exist before the crew has anywhere to
+ * go. Without this the game opens on a black screen with no way to set a route.
+ */
+async function buildOrbit(): Promise<void> {
+  teardownWorld();
+  const origin = new THREE.Vector3(0, 0, 0);
+  sceneManager.clearLights();
+  sceneManager.setOrbit();
+  await shipView.build(origin, 0);
+
+  collision.setShipOnly(origin);
+  collision.shipBoxes = [
+    ...shipView.colliders,
+    // The hatch is shut in transit, so seal the opening.
+    {
+      minX: origin.x - SHIP.hatchWidth / 2,
+      maxX: origin.x + SHIP.hatchWidth / 2,
+      minZ: origin.z - SHIP.halfD - 0.3,
+      maxZ: origin.z - SHIP.halfD + 0.3,
+    },
+  ];
+
+  controller.teleportTo(origin.x, origin.y + SHIP.floorY, origin.z + 1.5, -1);
+  controller.yaw = 0;
+  controller.lightOn = false;
+  insideShip = true;
+  orbitReady = true;
+  audio.setSpace('ship');
+  ambience.setKind('ship', true);
+  hud.log('In transit. Use the terminal to set a route.', 'warn', 10);
+}
+
 async function buildWorld(): Promise<void> {
   const { moonId, weather, seed } = net.expedition;
   if (!moonId || !weather) {
-    worldReady = false;
-    facilityView.setVisible(false);
-    exteriorView.setVisible(false);
+    await buildOrbit();
     return;
   }
+  orbitReady = false;
 
   const isDepot = moonId === 'company';
   const moon = moonById(isDepot ? 'ridge' : moonId);
@@ -676,6 +711,7 @@ async function buildWorld(): Promise<void> {
 
 function teardownWorld(): void {
   worldReady = false;
+  orbitReady = false;
   layout = null;
   exterior = null;
   currentSeed = -1;
@@ -690,6 +726,10 @@ function teardownWorld(): void {
 }
 
 function updateSpace(): void {
+  if (!worldReady) {
+    insideShip = true;
+    return;
+  }
   const wasInside = insideShip;
   insideShip = collision.insideShip(controller.position.x, controller.position.y, controller.position.z, controller.level);
   const indoors = controller.level >= 0;
@@ -709,7 +749,7 @@ net.on((msg: ServerMessage) => {
   switch (msg.t) {
     case 'expedition':
       if (msg.moonId && msg.seed !== currentSeed) void buildWorld();
-      else if (!msg.moonId && worldReady) teardownWorld();
+      else if (!msg.moonId && !orbitReady) void buildOrbit();
       break;
 
     case 'inventory':
@@ -1012,7 +1052,8 @@ function frame(now: number): void {
 
   if (keys.has('KeyG')) throwCharge = Math.min(1, throwCharge + dt * 1.6);
 
-  if (worldReady && alive) {
+  const playable = worldReady || orbitReady;
+  if (playable && alive) {
     controller.carryWeight = self?.carryWeight ?? 0;
     controller.frozen = terminal.open || monitor.open || chatOpen;
     controller.update(dt, input, true);
@@ -1025,14 +1066,14 @@ function frame(now: number): void {
   // Doors the collision layer needs to know about.
   for (const [id, door] of net.doors) collision.doorOpen.set(id, door.state === 1 || door.state === 4);
 
-  if (worldReady) {
+  if (playable) {
     facilityView.update(dt, net.doors);
-    shipView.setHatch(net.ship?.doorsOpen ?? true, dt);
+    shipView.setHatch(worldReady && (net.ship?.doorsOpen ?? true), dt);
     entityView.update(dt, performance.now(), net.playerId, true);
     sceneManager.updateLights(controller.level);
     sceneManager.updateEnvironment(net.ship?.dayProgress ?? 0, controller.level >= 0 || insideShip, dt);
 
-    if (exterior && controller.level < 0) {
+    if (worldReady && exterior && controller.level < 0) {
       const water = net.ship?.weather && WEATHER[net.ship.weather].flags.rising
         ? -0.4 + (net.ship.dayProgress ?? 0) * 2.6
         : exterior.waterBase;
@@ -1055,7 +1096,7 @@ function frame(now: number): void {
   );
 
   // Networking: fixed-ish rate is fine, the server clamps anything wild.
-  if (net.connected && worldReady) {
+  if (net.connected && playable) {
     net.sendInput(
       controller.position.x,
       controller.position.y,
@@ -1104,7 +1145,7 @@ function frame(now: number): void {
 
   // UI
   hud.update(dt, net.ship, self?.health ?? 100, controller.stamina, self?.carryWeight ?? 0);
-  hud.setPrompt(worldReady && alive ? (findTarget()?.label ?? null) : null);
+  hud.setPrompt(playable && alive ? (findTarget()?.label ?? null) : null);
   hud.updateScanBlips(projectToScreen);
   if (rosterOpen) hud.toggleRoster(true);
   if (monitor.open && exterior) monitor.update(dt, exterior.ship.x, exterior.ship.z, exterior.size);

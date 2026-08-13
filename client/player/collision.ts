@@ -42,6 +42,20 @@ export class WorldCollision {
   /** Door id -> passable, mirrored from the network state. */
   doorOpen = new Map<number, boolean>();
 
+  /**
+   * In orbit there is no moon: the ship is the entire world. The floor outside
+   * the hull is the hull's own deck height, so a player who somehow gets out
+   * does not fall through the universe.
+   */
+  setShipOnly(shipPosition: THREE.Vector3): void {
+    this.layout = null;
+    this.exterior = null;
+    this.shipPosition.copy(shipPosition);
+    this.terrain = () => shipPosition.y + SHIP.floorY;
+    this.exteriorColliders = [];
+    this.interiorColliders.clear();
+  }
+
   setWorld(layout: FacilityLayout, exterior: ExteriorLayout, shipPosition: THREE.Vector3): void {
     this.layout = layout;
     this.exterior = exterior;
@@ -201,9 +215,10 @@ export class WorldCollision {
   }
 
   private resolveExterior(position: THREE.Vector3, radius: number): void {
-    const size = this.exterior?.size ?? 200;
-    position.x = clamp(position.x, -size, size);
-    position.z = clamp(position.z, -size, size);
+    // In orbit the playable area is the hull, so the bounds close right in.
+    const size = this.exterior?.size ?? SHIP.halfW + 8;
+    position.x = clamp(position.x, this.shipPosition.x - size, this.shipPosition.x + size);
+    position.z = clamp(position.z, this.shipPosition.z - size, this.shipPosition.z + size);
     this.pushOutOfCircles(position, this.exteriorColliders, radius, 0);
 
     for (const box of this.shipBoxes) {

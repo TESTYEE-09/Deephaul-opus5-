@@ -173,6 +173,20 @@ export class SceneManager {
     this.buildRain(w.flags.precipitation === 'rain' ? 5200 : w.flags.precipitation === 'ash' ? 2600 : 0, w.flags.precipitation);
   }
 
+  /** In transit: no moon, no weather, just the hull and the dark outside it. */
+  setOrbit(): void {
+    this.moon = null;
+    this.weather = 'clear';
+    this.skyMaterial.uniforms.topColor.value.setHex(0x05070a);
+    this.skyMaterial.uniforms.bottomColor.value.setHex(0x080a0d);
+    this.baseFog = 0.004;
+    const fogColor = new THREE.Color(0x05070a);
+    (this.scene.fog as THREE.FogExp2).color.copy(fogColor);
+    (this.scene.background as THREE.Color).copy(fogColor);
+    this.sun.intensity = 0;
+    this.buildRain(0, 'none');
+  }
+
   /** Called each frame with 0..1 day progress and whether the camera is indoors. */
   updateEnvironment(dayProgress: number, indoors: boolean, dt: number): void {
     this.time += dt;
