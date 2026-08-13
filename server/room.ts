@@ -491,9 +491,16 @@ export class GameRoom {
       }
       case 'ship': {
         // The lever by the hatch: land or launch depending on where we are.
-        if (this.phase === 'landed' || this.phase === 'departing') this.beginDeparture('crew');
-        else if (this.phase === 'orbit') this.land();
-        else if (this.phase === 'company') this.beginDeparture('crew');
+        if (this.phase === 'landed' || this.phase === 'departing') {
+          this.beginDeparture('crew');
+        } else if (this.phase === 'company') {
+          this.beginDeparture('crew');
+        } else if (this.phase === 'orbit') {
+          const result = this.land();
+          // Pulling a lever that does nothing is the worst possible feedback.
+          this.broadcast({ t: 'terminal', lines: [result.message] });
+          if (!result.ok) this.sendTo(p, { t: 'event', e: 'notice', text: result.message });
+        }
         break;
       }
       case 'charger': {

@@ -226,7 +226,11 @@ export class PlayerController {
       this.position.z,
     );
     camera.rotation.order = 'YXZ';
-    camera.rotation.y = this.yaw;
+    // The whole codebase treats a heading as (sin a, cos a) - monsters, dropped
+    // items, entrance markers and remote player models all use it. Three.js
+    // cameras look down local -Z, which is the opposite, so the camera picks up
+    // the half turn rather than every other system picking up a minus sign.
+    camera.rotation.y = this.yaw + Math.PI;
     camera.rotation.x = this.pitch;
     // A slight roll while strafing sells the weight of the body.
     camera.rotation.z = lerp(camera.rotation.z, -this.velocity.x * 0.004 * Math.cos(this.yaw), 0.12) + this.shake * 0.02;

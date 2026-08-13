@@ -15,6 +15,10 @@ export class TerminalScreen {
   private buffer: string[] = [];
 
   constructor(private onSubmit: (line: string) => void, private onClose: () => void) {
+    $('terminal').addEventListener('mousedown', (ev) => {
+      ev.preventDefault();
+      this.focus();
+    });
     this.input.addEventListener('keydown', (ev) => {
       if (ev.key === 'Enter') {
         const line = this.input.value.trim();
@@ -42,8 +46,19 @@ export class TerminalScreen {
   show(): void {
     this.open = true;
     $('terminal').classList.remove('hidden');
-    this.input.focus();
+    // Firefox hands focus back to the canvas when pointer lock is released,
+    // which happens a frame or two after we open the screen. Claim it again
+    // once that has settled, or the player types into nothing.
+    this.focus();
+    requestAnimationFrame(() => this.focus());
+    setTimeout(() => this.focus(), 120);
     audio.play('sci-fi-sounds-computerNoise_000', { bus: 'ui', volume: 0.35 });
+  }
+
+  /** Re-claim the caret. Safe to call at any time. */
+  focus(): void {
+    if (!this.open) return;
+    if (document.activeElement !== this.input) this.input.focus();
   }
 
   close(): void {

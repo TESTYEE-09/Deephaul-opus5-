@@ -232,6 +232,8 @@ function bindGameInput(): void {
   document.addEventListener('pointerlockchange', () => {
     pointerLocked = document.pointerLockElement === canvas;
     $('pause').classList.toggle('hidden', pointerLocked || terminal.open || monitor.open || chatOpen);
+    // Releasing the lock steals focus back to the canvas; take it straight back.
+    if (!pointerLocked) terminal.focus();
   });
   $('pause').addEventListener('click', () => requestPointerLock());
   canvas.addEventListener('click', () => {
@@ -629,7 +631,17 @@ function useEntrance(anchor: number): void {
  * where the terminal lives, so it has to exist before the crew has anywhere to
  * go. Without this the game opens on a black screen with no way to set a route.
  */
+let buildingOrbit: Promise<void> | null = null;
+
 async function buildOrbit(): Promise<void> {
+  if (buildingOrbit) return buildingOrbit;
+  buildingOrbit = buildOrbitInner().finally(() => {
+    buildingOrbit = null;
+  });
+  return buildingOrbit;
+}
+
+async function buildOrbitInner(): Promise<void> {
   teardownWorld();
   const origin = new THREE.Vector3(0, 0, 0);
   sceneManager.clearLights();
