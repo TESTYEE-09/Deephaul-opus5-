@@ -50,13 +50,10 @@ export function saveSettings(settings: Settings): void {
 }
 
 /**
- * The dev setup runs Vite on one port and the game server on another, so the
- * socket cannot just reuse the page's port. In a production build they are the
- * same origin.
+ * Empty means solo: the authoritative server runs in a web worker inside the
+ * tab, which is how the game works on static hosting (GitHub Pages). Anyone
+ * running the Node server can still type its address here to play together.
  */
 function defaultServer(): string {
-  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const devPorts = ['5180', '5173', '4173'];
-  const port = devPorts.includes(location.port) ? '5181' : location.port;
-  return `${proto}//${location.hostname}${port ? `:${port}` : ''}`;
+  return '';
 }

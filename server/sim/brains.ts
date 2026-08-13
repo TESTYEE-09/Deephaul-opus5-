@@ -418,7 +418,10 @@ function brainThief(world: World, m: Monster, players: ServerPlayer[], dt: numbe
     if (arrived || Math.hypot(m.x - nestPos.x, m.z - nestPos.z) < 2.2) {
       for (const id of m.carrying) {
         const item = world.items.get(id);
-        if (!item) continue;
+        // A crewmate can grab an item out of the thief's grip mid-carry
+        // (pickup only rejects heldBy >= 0). If so, it is the player's now —
+        // do not teleport it to the nest out of their hands.
+        if (!item || item.heldBy !== -m.id) continue;
         item.heldBy = -1;
         item.x = nestPos.x + (Math.random() - 0.5) * 2.4;
         item.z = nestPos.z + (Math.random() - 0.5) * 2.4;

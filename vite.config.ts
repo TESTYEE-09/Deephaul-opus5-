@@ -1,12 +1,15 @@
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 
-export default defineConfig(({ command }) => ({
+export default defineConfig({
   root: 'client',
-  // In dev, Vite serves client/public directly at /assets. For a production
-  // build we do NOT copy it: that is ~170 MB of CC0 art, and the game server
-  // serves it in place instead (see the /assets handler in server/index.ts).
-  publicDir: command === 'serve' ? 'public' : false,
+  // Relative base so the build works from any path, including a GitHub Pages
+  // project site (https://<user>.github.io/<repo>/).
+  base: './',
+  // The CC0 art is ~170 MB and is fetched by tools/fetch-assets.mjs into
+  // client/public. Copy it into every build so the game is fully self-hosting
+  // (GitHub Pages has no file server to serve it in place).
+  publicDir: 'public',
   resolve: {
     alias: {
       '@shared': fileURLToPath(new URL('./shared', import.meta.url)),
@@ -22,4 +25,4 @@ export default defineConfig(({ command }) => ({
     target: 'es2022',
     chunkSizeWarningLimit: 2000,
   },
-}));
+});

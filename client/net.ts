@@ -1,15 +1,6 @@
-import {
-  PROTOCOL_VERSION,
-  type ClientMessage,
-  type DoorSnapshot,
-  type InventorySlot,
-  type MonsterSnapshot,
-  type PlayerSnapshot,
-  type ServerMessage,
-  type ShipSnapshot,
-  type WorldItemSnapshot,
-} from '@shared/protocol.ts';
+import { PROTOCOL_VERSION, type ClientMessage, type DoorSnapshot, type InventorySlot, type MonsterSnapshot, type PlayerSnapshot, type ServerMessage, type ShipSnapshot, type WorldItemSnapshot } from '@shared/protocol.ts';
 import type { WeatherId } from '@shared/content/weather.ts';
+import { LocalSocket } from './solo.ts';
 
 /** One interpolated remote entity. Local movement is predicted, not interpolated. */
 export interface Interpolated<T> {
@@ -61,8 +52,12 @@ export class NetClient {
   connect(url: string, name: string, room: string, skin: number): Promise<void> {
     return new Promise((resolve, reject) => {
       let settled = false;
-      const socket = new WebSocket(url);
-      this.socket = socket;
+      // An empty server field means "host the authoritative server in this
+      // tab": a web worker runs the same GameRoom as the Node server, which is
+      // what makes the game playable on static hosting like GitHub Pages.
+      const socket: WebSocket | LocalSocket =
+        !url || url === 'local' ? new LocalSocket() : new WebSocket(url);
+      this.socket = socket as WebSocket;
 
       socket.onopen = () => {
         this.connected = true;
@@ -70,7 +65,7 @@ export class NetClient {
         this.pingTimer = setInterval(() => this.send({ t: 'ping', time: performance.now() }), 3000);
       };
 
-      socket.onmessage = (ev) => {
+      socket.onmessage = (ev: { data: string }) => {
         let msg: ServerMessage;
         try {
           msg = JSON.parse(ev.data as string);
@@ -118,9 +113,19 @@ export class NetClient {
         this.hostId = msg.hostId;
         break;
 
-      case 'expedition':
+      case 'expedition': {
+        // A new moon (or orbit) means a new world with ids that restart at 1.
+        // Without pruning, items from the previous moon that the new world does
+        // not contain linger in the merge-by-id maps and render as ghosts at
+        // their old positions.
+        const changed = msg.moonId !== this.expedition.moonId || msg.seed !== this.expedition.seed;
         this.expedition = { moonId: msg.moonId, weather: msg.weather, seed: msg.seed, day: msg.day, phase: msg.phase };
+        if (changed) {
+          this.items.clear();
+          this.doors.clear();
+        }
         break;
+      }
 
       case 'snapshot': {
         if (this.lastSnapshotAt > 0) {

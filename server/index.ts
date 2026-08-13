@@ -207,6 +207,14 @@ wss.on('connection', (socket: WebSocket, req: IncomingMessage) => {
   });
 });
 
+server.on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`[deephaul] port ${PORT} is already in use — is another game server running?`);
+    process.exit(1);
+  }
+  throw err;
+});
+
 server.listen(PORT, () => {
   console.log(`[deephaul] server listening on :${PORT}`);
   if (STATIC_DIR) console.log(`[deephaul] serving client from ${STATIC_DIR}`);

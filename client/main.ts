@@ -661,7 +661,8 @@ async function buildOrbitInner(): Promise<void> {
   ];
 
   controller.teleportTo(origin.x, origin.y + SHIP.floorY, origin.z + 1.5, -1);
-  controller.yaw = 0;
+  // Face the hatch, not the back wall: the ramp is the way out.
+  controller.yaw = Math.PI;
   controller.lightOn = false;
   insideShip = true;
   orbitReady = true;
@@ -712,6 +713,7 @@ async function buildWorld(): Promise<void> {
   exteriorView.setVisible(!isDepot);
 
   controller.teleportTo(shipPosition.x, shipPosition.y + SHIP.floorY, shipPosition.z + 1.5, -1);
+  controller.yaw = Math.PI; // Face the hatch: the way out is straight ahead.
   controller.lightOn = false;
   worldReady = true;
   currentSeed = seed;
@@ -825,6 +827,9 @@ function handleEvent(ev: GameEvent): void {
         hud.notice('YOU ARE DEAD', 5);
         hud.setSpectating(true, String(ev.cause ?? ''), '');
         controller.lightOn = false;
+        // A corpse must not keep broadcasting on the walkie — the crew would
+        // hear the dead, and anything that listens would hear them too.
+        setTransmitting(false, false);
       } else {
         hud.log(`${name} died.`, 'bad', 8);
       }
@@ -1108,7 +1113,10 @@ function frame(now: number): void {
   );
 
   // Networking: fixed-ish rate is fine, the server clamps anything wild.
-  if (net.connected && playable) {
+  // Dead players stop sending: spectating mutates controller.level to follow
+  // the watched survivor, and forwarding that would flip the corpse's
+  // server-side level every frame.
+  if (net.connected && playable && alive) {
     net.sendInput(
       controller.position.x,
       controller.position.y,
@@ -1200,5 +1208,9 @@ function projectToScreen(x: number, z: number, level: number): { x: number; y: n
 
 document.addEventListener('contextmenu', (ev) => ev.preventDefault());
 addEventListener('beforeunload', () => saveSettings(settings));
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') audio.resume();
+});
+document.addEventListener('pointerdown', () => audio.resume(), { passive: true });
 
 void boot();

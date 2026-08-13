@@ -1051,16 +1051,22 @@ export class GameRoom {
 
     for (const p of this.players()) deaths += p.state === 'dead' ? 1 : 0;
 
+    const depotTrip = world.depot === true;
     this.world = null;
     this.phase = 'orbit';
     this.moonId = null;
     this.weather = null;
 
-    // The day advances whether or not it went well.
-    this.run.day++;
-    this.run.daysLeft--;
-    driftSellRate(this.run, hashInts(this.seed, this.run.day));
-    this.rollForecast();
+    // The day advances whether or not it went well — but a trip to the Company
+    // depot is not an expedition and has no clock pressure. The depot is the
+    // only place to sell, so billing a quota day for it would tax every sell
+    // trip and could terminate the contract while the crew sits at the counter.
+    if (!depotTrip) {
+      this.run.day++;
+      this.run.daysLeft--;
+      driftSellRate(this.run, hashInts(this.seed, this.run.day));
+      this.rollForecast();
+    }
 
     for (const p of this.players()) {
       p.state = 'alive';

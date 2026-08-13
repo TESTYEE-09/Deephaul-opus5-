@@ -17,6 +17,10 @@ audio are CC0 assets pulled by a script.
 
 ## Running it
 
+**Play it now: [https://testyee-09.github.io/Deephaul-opus5-/](https://testyee-09.github.io/Deephaul-opus5-/)** — GitHub Pages hosts the built client, and the authoritative game server runs inside your browser (a web worker). Leave the **server** field empty and hit **SIGN CONTRACT**.
+
+Locally:
+
 ```bash
 git clone https://github.com/TESTYEE-09/Deephaul-opus5-.git
 cd Deephaul-opus5-
@@ -29,7 +33,8 @@ Open **http://localhost:5180**, enter a name, hit **SIGN CONTRACT**.
 
 To play with other people, everyone joins the same **crew code** and points the
 **server** field at the host's machine (`ws://<host-ip>:5181`). Same crew code =
-same ship, same quota, same run.
+same ship, same quota, same run. On the hosted build you can also run your own
+Node server and type its address — solo mode is only the default.
 
 For a single self-contained server:
 
@@ -39,6 +44,9 @@ npm run serve                    # builds the client and serves it on :5181
 
 Other scripts: `npm test` (25 tests, including a scripted full expedition),
 `npm run check` (typecheck), `npm run build`.
+
+The Pages build is produced by `.github/workflows/pages.yml` on every push to
+`main`.
 
 ---
 
@@ -260,6 +268,13 @@ creatures, health, time, money. Movement is client-side for responsiveness with
 a server-side speed clamp; level transitions are exempt, because stepping
 through a facility door is a legitimate twenty-kilometre jump between two
 coordinate spaces.
+
+**Hosting:** the same `GameRoom` runs either in the Node process
+(`server/index.ts`) or inside a web worker (`client/worker-server.ts`), speaking
+the identical wire protocol through a `Connection`-shaped socket. That is what
+makes the GitHub Pages build playable: static hosting cannot run Node, so the
+browser hosts the authoritative server itself. Multiplayer still wants a real
+Node server — the worker is private to its tab.
 
 **Collision is the cell grid**, not a mesh. The AI navigates the same grid the
 player collides against, so a creature can never reach through a wall the player

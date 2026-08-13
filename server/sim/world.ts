@@ -297,7 +297,7 @@ export class World {
     this.updateItems(dt, players);
     this.updateHazards(dt, players, damage);
     this.updateWeather(dt, players, damage);
-    this.updateSpawning(players);
+    this.updateSpawning(dt, players);
 
     for (const monster of this.monsters.values()) {
       runBrain(this, monster, players, dt, damage);
@@ -418,8 +418,11 @@ export class World {
         if (player.state !== 'alive' || player.level !== hazard.level) continue;
         const d = Math.hypot(player.x - hx, player.z - hz);
         if (d > hazard.radius || Math.abs(player.y - hy) > 3) continue;
-        const dps = hazard.kind === 'crusher' ? hazard.damage : hazard.damage * dt;
-        damage(player, dps, hazard.kind);
+        // Damage is a per-second rate for every hazard. The crusher used to
+        // apply its full value per tick (100 x 20 Hz = 2000 DPS) with no
+        // client-side telegraph, which made the first tick inside the zone an
+        // invisible instant kill.
+        damage(player, hazard.damage * dt, hazard.kind);
       }
     }
   }
@@ -515,13 +518,16 @@ export class World {
     return total;
   }
 
-  private updateSpawning(players: ServerPlayer[]): void {
+  private updateSpawning(dt: number, players: ServerPlayer[]): void {
     if (this.depot) return;
     const w = WEATHER[this.weather];
     const ramp = 0.22 + this.dayProgress * 0.78 * w.dangerRampMultiplier;
 
-    this.indoorSpawnAt -= 1 / 20;
-    this.outdoorSpawnAt -= 1 / 20;
+    // Decrement by real elapsed time. A fixed 1/20 per tick made the spawn
+    // clocks run slow whenever the event loop stalled, so creature pressure
+    // drifted with server load instead of day progress.
+    this.indoorSpawnAt -= dt;
+    this.outdoorSpawnAt -= dt;
 
     if (this.indoorSpawnAt <= 0) {
       const interval = lerp(this.moon.power.indoorInterval[0], this.moon.power.indoorInterval[1], this.dayProgress);

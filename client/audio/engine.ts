@@ -83,6 +83,16 @@ export class AudioEngine {
     if (this.master) this.master.gain.value = v;
   }
 
+  /**
+   * Browsers suspend the AudioContext while the tab is hidden. Resuming it on
+   * the way back in (and on any user gesture) keeps the game audible after an
+   * alt-tab instead of silently going quiet until reload.
+   */
+  resume(): void {
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') void this.ctx.resume();
+  }
+
   setVoiceVolume(v: number): void {
     if (this.buses) this.buses.voice.gain.value = v;
   }
